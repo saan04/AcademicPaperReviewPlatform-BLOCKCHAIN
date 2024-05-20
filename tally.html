@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Dashboard</title>
+    <style>
+        /* Basic styling for the dashboard */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            text-align: center;
+        }
+        .review-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Review Dashboard</h1>
+
+        <!-- Input field for IPFS hash -->
+        <div class="form-group">
+            <label for="ipfsHashInput">Enter IPFS Hash:</label>
+            <input type="text" id="ipfsHashInput">
+        </div>
+
+        <!-- Button to retrieve review data -->
+        <button onclick="retrieveReview()">Retrieve Review</button>
+
+        <!-- Container to display review data -->
+        <div id="reviews"></div>
+    </div>
+
+    <!-- Add Web3.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script>
+        // Connect to Ethereum network using Web3.js
+        const web3 = new Web3(Web3.givenProvider || 'http://127.0.0.1:8545'); // Connect to Ethereum network
+
+        // Replace with your deployed contract address and ABI
+        const contractAddress = '0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e';
+        const contractABI = [
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "ipfsHash",
+				"type": "string"
+			}
+		],
+		"name": "dislike",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "ipfsHash",
+				"type": "string"
+			}
+		],
+		"name": "like",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "ipfsHash",
+				"type": "string"
+			}
+		],
+		"name": "getReview",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"name": "reviews",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "likes",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "dislikes",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+];
+
+        // Initialize contract instance
+        const contract = new web3.eth.Contract(contractABI, contractAddress);
+
+        // Function to retrieve review data based on IPFS hash
+        async function retrieveReview() {
+            try {
+                const ipfsHash = document.getElementById('ipfsHashInput').value.trim();
+                const review = await contract.methods.getReview(ipfsHash).call();
+                renderReview(ipfsHash, review);
+            } catch (error) {
+                console.error('Error retrieving review:', error);
+            }
+        }
+
+        // Function to render review data on the HTML page
+        function renderReview(ipfsHash, review) {
+            const reviewsContainer = document.getElementById('reviews');
+            reviewsContainer.innerHTML = '';
+
+            const reviewItem = document.createElement('div');
+            reviewItem.classList.add('review-item');
+            reviewItem.innerHTML = `
+                <p><strong>IPFS Hash:</strong> ${ipfsHash}</p>
+                <p><strong>Likes:</strong> ${review[0]}</p>
+                <p><strong>Dislikes:</strong> ${review[1]}</p>
+            `;
+            reviewsContainer.appendChild(reviewItem);
+        }
+    </script>
+</body>
+</html>
